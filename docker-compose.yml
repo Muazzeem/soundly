@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+    db:
+        image: postgres:16
+        container_name: soundly_db
+        environment:
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        volumes:
+            - soundly-db:/var/lib/postgresql/data
+    server:
+        container_name: soundly_server
+        build:
+            context: ./server/
+            dockerfile: Dockerfile
+        environment:
+            - DJANGO_SETTINGS_MODULE:soundly.settings.dev
+        command: python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - ./:/app
+        ports:
+            - "8000:8000"
+        depends_on:
+            - db
+volumes:
+    soundly-db:

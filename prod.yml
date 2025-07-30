@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+    db:
+        image: postgres:16
+        container_name: soundly_db
+        environment:
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        volumes:
+            - soundly-db:/var/lib/postgresql/data
+    server:
+        container_name: soundly_server
+        image: docker.pkg.github.com/mubarak117136/soundly/soundly:prod
+        environment:
+            - DJANGO_SETTINGS_MODULE:soundly.settings.production
+        command: gunicorn -w 10 -b unix:/app/server/socket/PROJECT_NAME.sock soundly.wsgi:application
+        volumes:
+            - ./server/.env:/app/server/.env
+            - ./server/static:/app/server/static
+            - ./server/media:/app/server/media
+            - ./server/socket:/app/server/socket
+        ports:
+            - "8000:8000"
+volumes:
+    soundly-db:
