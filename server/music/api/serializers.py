@@ -12,21 +12,25 @@ class MusicPlatformSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     platform = MusicPlatformSerializer(read_only=True)
     uploader = UserSerializer(read_only=True)
+    remaining_uploads = serializers.SerializerMethodField()
 
     class Meta:
         model = Song
         fields = [
-            'uid', 'title', 'artist', 'album', 'genre', 'url',
+            'uid', 'remaining_uploads', 'title', 'artist', 'album', 'genre', 'url', 'fun_fact',
             'duration_seconds', 'release_date', 'cover_image_url',
             'platform', 'uploader', 'created_at', 'updated_at'
         ]
+    
+    def get_remaining_uploads(self, obj):
+        return obj.remaining_uploads
 
 
 class SongCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
         fields = [
-            'title', 'artist', 'album', 'genre', 'url',
+            'title', 'artist', 'album', 'genre', 'url', 'fun_fact',
             'duration_seconds', 'release_date', 'cover_image_url',
             'platform', 'uploader'
         ]

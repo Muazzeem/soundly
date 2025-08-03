@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "core",
     "music",
     "otp",
+    "subscription",
 
 ]
 
@@ -79,6 +80,11 @@ TEMPLATES = [
         },
     },
 ]
+
+STRIPE_API_KEY = config("STRIPE_API_KEY")
+
+MONTHLY_PRICE_ID = "price_1Rqw6kAMYVKKEks2PHPaqjhl"
+YEARLY_PRICE_ID = "price_1Rqw69AMYVKKEks2BtxXCxL8"
 
 WSGI_APPLICATION = "soundly.wsgi.application"
 

@@ -111,6 +111,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'country',
             'city',
             'profile_image',
+            "type",
             'device_token',
             'receive_notifications',
             'is_active_for_receiving',
@@ -132,6 +133,7 @@ class UserSerializer(serializers.ModelSerializer):
             'country',
             'city',
             'profile_image',
+            'type',
         ]
         read_only_fields = ['uid', 'email', 'created_at', 'updated_at']
 

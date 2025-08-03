@@ -12,3 +12,4 @@ django-extensions==4.1
 spotipy==2.24.0
 pycountry==24.6.1
 google-generativeai==0.8.5
+stripe==12.4.0

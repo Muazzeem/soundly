@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.contrib.auth.models import BaseUserManager
 from core.models import UUIDBaseModel
+from django.utils.translation import gettext_lazy as _
+
+from .choices import UserTypeChoice
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -20,6 +23,12 @@ class CustomUserManager(BaseUserManager):
 
 class User(AbstractUser, UUIDBaseModel):
     email = models.EmailField(unique=True)
+    type = models.CharField(
+        _("User Type"),
+        max_length=20,
+        choices=UserTypeChoice.choices,
+        default=UserTypeChoice.BASIC,
+    )
     profession = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=200, blank=True)
     city = models.CharField(max_length=200, blank=True)

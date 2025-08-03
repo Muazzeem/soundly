@@ -4,6 +4,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Q, F, Func
+from django.utils.timezone import localdate
+
+from users.choices import UserTypeChoice
 
 User = get_user_model()
 
@@ -35,6 +38,7 @@ class Song(UUIDBaseModel, TimeStampModel):
     artist = models.CharField(max_length=200)
     album = models.CharField(max_length=200, blank=True)
     url = models.URLField(validators=[URLValidator()])
+    fun_fact = models.TextField(blank=True)
     duration_seconds = models.PositiveIntegerField(null=True, blank=True)
     release_date = models.CharField(null=True, blank=True)
     cover_image_url = models.URLField(blank=True)
@@ -45,12 +49,23 @@ class Song(UUIDBaseModel, TimeStampModel):
 
     class Meta:
         db_table = 'songs'
-        unique_together = ['title', 'artist']
         indexes = [
             models.Index(fields=['genre']),
             models.Index(fields=['artist']),
             models.Index(fields=['created_at']),
         ]
+    
+    @property
+    def remaining_uploads(self):
+        today = localdate()
+        uploaded_today = Song.objects.filter(uploader=self.uploader, created_at__date=today).count()
+
+        if self.uploader.type == UserTypeChoice.BASIC:
+            return max(0, 10 - uploaded_today)
+        elif self.uploader.type == UserTypeChoice.PREMIUM:
+            return max(0, 30 - uploaded_today)
+        else:
+            return 0
 
 
 class SongExchange(UUIDBaseModel, TimeStampModel):
