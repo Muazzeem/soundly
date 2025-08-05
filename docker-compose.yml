@@ -8,36 +8,36 @@ services:
             - POSTGRES_HOST_AUTH_METHOD=trust
         volumes:
             - soundly-db:/var/lib/postgresql/data
-    
+
     server:
         container_name: soundly_server
         build:
             context: ./server/
             dockerfile: Dockerfile
         environment:
-            - DJANGO_SETTINGS_MODULE=soundly.settings.dev
+            - DJANGO_SETTINGS_MODULE:soundly.settings.dev
         command: python manage.py runserver 0.0.0.0:8000
         volumes:
-            - ./server/:/app 
+            - ./:/app
         ports:
             - "8000:8000"
         depends_on:
             - db
 
-    caddy:
-        image: caddy:latest
-        container_name: soundly_caddy
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            - ./Caddyfile:/etc/caddy/Caddyfile
-            - ./server/soundly/static:/app/static
-            - ./server/media:/app/media
-            - caddy_data:/data
-            - caddy_config:/config
-        depends_on:
-            - server
+    # caddy:
+    #     image: caddy:latest
+    #     container_name: soundly_caddy
+    #     ports:
+    #         - "80:80"
+    #         - "443:443"
+    #     volumes:
+    #         - ./Caddyfile:/etc/caddy/Caddyfile
+    #         - ./server/soundly/static:/app/static
+    #         - ./server/media:/app/media
+    #         - caddy_data:/data
+    #         - caddy_config:/config
+    #     depends_on:
+    #         - server
 
 volumes:
   soundly-db:

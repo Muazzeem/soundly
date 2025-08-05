@@ -13,13 +13,7 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-COPY . /app/  # Copy all files from the build context (./server/) to /app
+WORKDIR /app/server
+COPY . /app/server
 
 RUN pip install --no-cache-dir -r requirements/dev.txt
-
-EXPOSE 8000
-
-# The command is defined in docker-compose.yml, but a good default is to run a web server.
-# This is a sensible default for the image itself.
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
