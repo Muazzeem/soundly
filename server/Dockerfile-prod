@@ -21,5 +21,3 @@ RUN pip install --upgrade pip
 ARG ENV=dev
 RUN pip install -r requirements/${ENV}.txt
 
-
-CMD ["gunicorn", "soundly.wsgi:application", "--bind", "0.0.0.0:8000"]

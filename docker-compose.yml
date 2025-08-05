@@ -12,17 +12,33 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile-prod
-    command: gunicorn -w 2 -b unix:/tmp/soundly.sock soundly.wsgi:application
+    command: gunicorn -w 2 -b 0.0.0.0:8000 soundly.wsgi:application 
     volumes:
       - ./server/.env:/app/server/.env
       - ./server/static:/app/server/static
       - ./server/soundly/static:/app/server/soundly/static
       - ./server/media:/app/server/media
-      - /tmp/soundly.sock:/tmp/soundly.sock 
     depends_on:
       - db
     environment:
       - DJANGO_SETTINGS_MODULE=soundly.settings.production
 
+  caddy:
+    image: caddy:latest
+    container_name: soundly_caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./server/static:/app/static
+      - ./server/media:/app/media
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - server
+
 volumes:
   soundly-db:
+  caddy_data:
+  caddy_config:
