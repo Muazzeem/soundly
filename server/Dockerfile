@@ -2,10 +2,9 @@ FROM python:3.12-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-# This ENV will be set by docker-compose, but it's good practice to have it here too.
 ENV DJANGO_SETTINGS_MODULE=soundly.settings.dev
 
-# Install system dependencies for Python packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libproj-dev \
     gdal-bin \
@@ -15,11 +14,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY ./server/ /app/
+COPY . /app/  # Copy all files from the build context (./server/) to /app
 
 RUN pip install --no-cache-dir -r requirements/dev.txt
 
 EXPOSE 8000
 
-# The command is defined in docker-compose.yml
+# The command is defined in docker-compose.yml, but a good default is to run a web server.
+# This is a sensible default for the image itself.
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

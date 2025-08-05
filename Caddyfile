@@ -1,11 +1,11 @@
 http:// {
-    # Route requests for static files
+    # Serve static files from the mapped volume
     route /static/* {
         root * /app
         file_server
     }
 
-    # Route requests for media files
+    # Serve media files from the mapped volume
     route /media/* {
         root * /app
         file_server
