@@ -1,18 +1,16 @@
 http:// {
-    # Serve static files first
-    handle_path /static/* {
+    # Route requests for static files
+    route /static/* {
         root * /app
         file_server
     }
 
-    # Serve media files
-    handle_path /media/* {
+    # Route requests for media files
+    route /media/* {
         root * /app
         file_server
     }
 
     # Proxy all other requests to the Django app
-    handle {
-        reverse_proxy server:8000
-    }
+    reverse_proxy / server:8000
 }
