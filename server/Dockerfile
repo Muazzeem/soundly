@@ -14,5 +14,3 @@ WORKDIR /app/server/
 COPY . /app/server/
 RUN pip --timeout 600 install --upgrade pip setuptools wheel
 RUN pip install -r requirements/dev.txt
-
-

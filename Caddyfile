@@ -1,17 +1,18 @@
 http:// {
-    root * /app/static
-    file_server
+    # Serve static files first
+    handle_path /static/* {
+        root * /app
+        file_server
+    }
 
+    # Serve media files
     handle_path /media/* {
         root * /app
         file_server
     }
 
+    # Proxy all other requests to the Django app
     handle {
-        reverse_proxy unix//app/server/socket/soundly.sock {
-            transport http {
-                read_buffer 4096
-            }
-        }
+        reverse_proxy server:8000
     }
 }
