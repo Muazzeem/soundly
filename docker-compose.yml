@@ -12,13 +12,13 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile-prod
-    command: gunicorn -w 2 -b unix:/app/server/socket/soundly.sock soundly.wsgi:application
+    command: gunicorn -w 2 -b unix:/tmp/soundly.sock soundly.wsgi:application
     volumes:
       - ./server/.env:/app/server/.env
       - ./server/static:/app/server/static
       - ./server/soundly/static:/app/server/soundly/static
       - ./server/media:/app/server/media
-      - ./server/socket:/app/server/socket
+      - /tmp/soundly.sock:/tmp/soundly.sock 
     depends_on:
       - db
     environment:
