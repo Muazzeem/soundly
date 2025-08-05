@@ -1,0 +1,17 @@
+http:// {
+    root * /app/static
+    file_server
+
+    handle_path /media/* {
+        root * /app
+        file_server
+    }
+
+    handle {
+        reverse_proxy unix//app/server/socket/soundly.sock {
+            transport http {
+                read_buffer 4096
+            }
+        }
+    }
+}
