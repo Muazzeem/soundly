@@ -24,23 +24,5 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=soundly.settings.production
 
-  caddy:
-    image: caddy:latest
-    container_name: soundly_caddy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./server/static:/app/static
-      - ./server/media:/app/media
-      - ./server/socket:/app/server/socket
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - server
-
 volumes:
   soundly-db:
-  caddy_data:
-  caddy_config:
