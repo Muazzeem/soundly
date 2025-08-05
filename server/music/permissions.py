@@ -3,6 +3,7 @@ from datetime import date
 from django.utils.timezone import localdate
 from music.models import Song
 from users.choices import UserTypeChoice
+from django.conf import settings
 
 class CanUploadSong(permissions.BasePermission):
     """
@@ -17,10 +18,17 @@ class CanUploadSong(permissions.BasePermission):
         today = localdate()
         song_count_today = Song.objects.filter(uploader=user, created_at__date=today).count()
 
-        # Set daily upload limits
         if user.type == UserTypeChoice.BASIC:
-            return song_count_today < 10
+            return song_count_today < settings.SONG_UPLOAD_LIMIT
+        
         elif user.type == UserTypeChoice.PREMIUM:
-            return song_count_today < 30
+            pass
+
+        elif user.type == UserTypeChoice.ARTIST:
+            pass
+
+        elif user.type == UserTypeChoice.INFLUENCER:
+            pass
+
         else:
             return False

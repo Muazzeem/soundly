@@ -7,6 +7,8 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 SECRET_KEY = config("SECRET_KEY")
 
+ALLOWED_HOSTS = ["*"]
+
 INSTALLED_APPS = [
     "home",
     "search",
@@ -42,7 +44,7 @@ INSTALLED_APPS = [
     "core",
     "music",
     "otp",
-    "subscription",
+    # "subscription",
 
 ]
 
@@ -85,6 +87,8 @@ STRIPE_API_KEY = config("STRIPE_API_KEY")
 
 MONTHLY_PRICE_ID = "price_1Rqw6kAMYVKKEks2PHPaqjhl"
 YEARLY_PRICE_ID = "price_1Rqw69AMYVKKEks2BtxXCxL8"
+
+SONG_UPLOAD_LIMIT = config("SONG_UPLOAD_LIMIT")
 
 WSGI_APPLICATION = "soundly.wsgi.application"
 

@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    container_name: soundly_db
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - soundly-db:/var/lib/postgresql/data
+
+  server:
+    container_name: soundly_server
+    build:
+      context: ./server
+      dockerfile: Dockerfile-prod
+    command: gunicorn soundly.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./server:/app
+    expose:
+      - "8000"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=soundly.settings.production
+
+  nginx:
+    image: nginx:latest
+    container_name: soundly_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - server
+
+volumes:
+  soundly-db:

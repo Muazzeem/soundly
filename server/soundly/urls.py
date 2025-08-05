@@ -2,23 +2,16 @@ from django.conf import settings
 from django.urls import include, path
 from django.contrib import admin
 
-# from wagtail.admin import urls as wagtailadmin_urls
-# from wagtail import urls as wagtail_urls
-# from wagtail.documents import urls as wagtaildocs_urls
-
 from search import views as search_views
 
-from dj_rest_auth.views import PasswordChangeView, PasswordResetView, LoginView, PasswordResetConfirmView
+from dj_rest_auth.views import LoginView, PasswordResetConfirmView
 from dj_rest_auth.registration.views import RegisterView
 from otp.api.views import ResendOTPView, VerifyOTPView
-from users.api.serializers import CustomPasswordResetSerializer
 from users.api.views import CustomPasswordResetView
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # path("admin/", include(wagtailadmin_urls)),
-    # path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("auth/signup/", RegisterView.as_view(), name="account_signup"),
     path("auth/login/", LoginView.as_view(), name="account_login"),
@@ -48,5 +41,5 @@ if settings.DEBUG:
                           document_root=settings.MEDIA_ROOT)
 
 urlpatterns = urlpatterns + [
-    # path("", include(wagtail_urls)),
+    
 ]
