@@ -2,7 +2,7 @@ import os
 
 from .base import *
 
-DEBUG = True
+DEBUG = False
 SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = ["api.soundlybeats.com"]
 
