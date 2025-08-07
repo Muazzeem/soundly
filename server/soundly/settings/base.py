@@ -136,7 +136,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.api.serializers.CustomRegisterSerializer"
 }
 
-FRONTEND_BASE_URL = "http://localhost:8080"
+FRONTEND_BASE_URL = "https://www.soundlybeats.com"
 PASSWORD_RESET_CONFIRM_URL = "reset-password/{uid}/{token}/"
 
 AUTH_PASSWORD_VALIDATORS = [
