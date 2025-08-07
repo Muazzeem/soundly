@@ -50,23 +50,23 @@ jobs:
             docker build -f ./server/Dockerfile-prod . -t soundly:prod
             docker tag soundly:prod ghcr.io/mubarak117136/soundly:prod
             docker push ghcr.io/mubarak117136/soundly:prod
-    production-deploy:
-        name: Production Deploy
-        needs: production-build
-        if: github.ref == 'refs/heads/stable'
-        runs-on: ubuntu-latest
-        steps:
-        - name: Server SSH Access
-          uses: appleboy/ssh-action@v0.1.7
-          with:
-              host: ${{ secrets.SERVER_IP }}
-              username: ${{ secrets.SERVER_USERNAME }}
-              key: ${{ secrets.SSH_PRIVATE_KEY }}
-              script: |
-                cd /www/soundly/
-                docker compose pull
-                docker compose down
-                docker compose up -d
-                docker compose exec -T server python ./manage.py migrate
-                docker compose exec -T server python ./manage.py collectstatic --noinput
-                docker image prune -f
+    # production-deploy:
+    #     name: Production Deploy
+    #     needs: production-build
+    #     if: github.ref == 'refs/heads/stable'
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #     - name: Server SSH Access
+    #       uses: appleboy/ssh-action@v0.1.7
+    #       with:
+    #           host: ${{ secrets.SERVER_IP }}
+    #           username: ${{ secrets.SERVER_USERNAME }}
+    #           key: ${{ secrets.SSH_PRIVATE_KEY }}
+    #           script: |
+    #             cd /www/soundly/
+    #             docker compose pull
+    #             docker compose down
+    #             docker compose up -d
+    #             docker compose exec -T server python ./manage.py migrate
+    #             docker compose exec -T server python ./manage.py collectstatic --noinput
+    #             docker image prune -f
