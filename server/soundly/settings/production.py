@@ -4,9 +4,10 @@ from .base import *
 
 DEBUG = False
 SECRET_KEY = config("SECRET_KEY")
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["api.soundlybeats.com"]
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://api.soundlybeats.com",
     "https://soundly-beats.vercel.app",
 ]
 
