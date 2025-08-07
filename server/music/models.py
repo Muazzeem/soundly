@@ -54,18 +54,24 @@ class Song(UUIDBaseModel, TimeStampModel):
             models.Index(fields=['artist']),
             models.Index(fields=['created_at']),
         ]
-    
+
     @property
     def remaining_uploads(self):
-        today = localdate()
-        uploaded_today = Song.objects.filter(uploader=self.uploader, created_at__date=today).count()
+        """
+        Returns the number of uploads remaining for today based on user type.
+        BASIC: 20/day
+        Others: Unlimited
+        """
+        if not self.uploader or not self.uploader.is_authenticated:
+            return 0
 
         if self.uploader.type == UserTypeChoice.BASIC:
-            return max(0, 10 - uploaded_today)
-        elif self.uploader.type == UserTypeChoice.PREMIUM:
-            return max(0, 30 - uploaded_today)
-        else:
-            return 0
+            today = localdate()
+            uploaded_today = Song.objects.filter(
+                uploader=self.uploader, created_at__date=today
+            ).count()
+            return max(0, 20 - uploaded_today)
+        return float("inf")
 
 
 class SongExchange(UUIDBaseModel, TimeStampModel):
