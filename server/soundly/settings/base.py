@@ -146,6 +146,7 @@ DJANGO_NOTIFICATIONS_CONFIG = {
 }
 
 FRONTEND_BASE_URL = "https://www.soundlybeats.com"
+FRONTEND_BASE_URL = "https://www.soundlybeats.com"
 PASSWORD_RESET_CONFIRM_URL = "reset-password/{uid}/{token}/"
 
 AUTH_PASSWORD_VALIDATORS = [
