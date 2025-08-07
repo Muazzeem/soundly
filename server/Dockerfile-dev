@@ -1,0 +1,9 @@
+FROM python:3.13.5
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=soundly.settings.dev
+WORKDIR /app/server/
+COPY ./server /app/server/
+COPY ./server/requirements /app/server/
+RUN pip install --upgrade pip
+RUN pip install -r requirements/dev.txt
