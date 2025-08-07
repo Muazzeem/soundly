@@ -11,6 +11,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://soundly-beats.vercel.app",
 ]
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 try:
     from .local import *
 except ImportError:
