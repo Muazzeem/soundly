@@ -1,0 +1,20 @@
+{
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "ms-python.black-formatter",
+
+  "[html]": {
+    "editor.defaultFormatter": "monosans.djlint"
+  },
+
+  "[django-html]": {
+    "editor.defaultFormatter": "monosans.djlint"
+  },
+
+  "djlint.formatHtmlFiles": true,
+  "djlint.django": true,
+  "djlint.ignore": [
+    "migrations",
+    "static"
+  ]
+}
