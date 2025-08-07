@@ -1,6 +1,4 @@
 import re
-from django.conf import settings
-
 from rest_framework import viewsets, status
 from rest_framework import generics
 from rest_framework.response import Response
@@ -62,6 +60,12 @@ class SongViewSet(viewsets.ModelViewSet):
 
         if not spotify_url:
             return Response({'error': 'Spotify URL is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Regex for Spotify track URL validation
+        pattern = r'^https:\/\/open\.spotify\.com\/track\/[a-zA-Z0-9]{22}\?si=[a-zA-Z0-9]{32}$'
+        if not re.match(pattern, spotify_url):
+            return Response({'error': 'Invalid Spotify track URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
         info = get_song_category_from_url(spotify_url)
 
@@ -182,6 +186,7 @@ class SongViewSet(viewsets.ModelViewSet):
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             return Response(song_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SentSongsMatchedView(generics.ListAPIView):
     serializer_class = MatchedSongExchangeSerializer
