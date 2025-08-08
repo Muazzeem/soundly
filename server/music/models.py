@@ -78,7 +78,7 @@ class Song(UUIDBaseModel, TimeStampModel):
             ).count()
             print(uploaded_today)
 
-            return max(0, 30 - uploaded_today)
+            return max(0, int(settings.SONG_UPLOAD_LIMIT) - uploaded_today)
         return float("inf")
 
 
