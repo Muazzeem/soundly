@@ -1,5 +1,5 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import PasswordResetSerializer
+from dj_rest_auth.serializers import PasswordResetSerializer, JWTSerializer
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -97,6 +97,31 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         return user
 
+
+class CustomJWTSerializer(JWTSerializer):
+    user_data = serializers.SerializerMethodField()
+
+    def get_user_data(self, obj):
+        user = obj.get('user')
+        if user:
+            return {
+                'pk': user.pk,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'type': user.type,
+                'profession': user.profession,
+                'country': user.country,
+                'city': user.city,
+            }
+        return None
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('user', None)
+        representation['user_data'] = self.get_user_data(instance)
+
+        return representation
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
