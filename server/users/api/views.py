@@ -11,6 +11,8 @@ from dj_rest_auth.views import PasswordResetView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework import generics
+from music.models import Song
+from users.choices import UserTypeChoice
 from .serializers import CustomPasswordResetSerializer, NotificationPreferenceSerializer, UserProfileSerializer
 
 User = get_user_model()
@@ -106,3 +108,28 @@ def google_auth(request):
 
 class CustomPasswordResetView(PasswordResetView):
     serializer_class = CustomPasswordResetSerializer
+
+
+@api_view(['GET'])
+def check_daily_upload_limit(request):
+    user = request.user
+
+    if not user or not user.is_authenticated:
+        return Response(
+            {"error": "Not authenticated"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    if user.type == UserTypeChoice.BASIC:
+        temp_song = Song(uploader=user)
+        remaining_uploads = temp_song.remaining_uploads
+
+        return Response({
+            "remaining_uploads": remaining_uploads
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({
+            "response": "Unlimited uploads"
+        },
+        status=status.HTTP_200_OK)
+

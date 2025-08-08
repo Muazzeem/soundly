@@ -10,5 +10,10 @@ class CanUploadSong(permissions.BasePermission):
         user = request.user
         if not user or not user.is_authenticated:
             return False
+
         temp_song = Song(uploader=user)
-        return temp_song.remaining_uploads > 0
+        if temp_song.remaining_uploads <= 0:
+            self.message = f"Upload limit reached. You have {temp_song.remaining_uploads} uploads remaining."
+            return False
+
+        return True
