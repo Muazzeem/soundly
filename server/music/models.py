@@ -1,9 +1,7 @@
 from django.db import models
 from django.core.validators import URLValidator
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
-from django.utils import timezone
-from django.db.models import Q, F, Func
+from django.conf import settings
 from django.utils.timezone import localdate
 
 from users.choices import UserTypeChoice
@@ -72,7 +70,7 @@ class Song(UUIDBaseModel, TimeStampModel):
             ).count()
             print(uploaded_today)
 
-            return max(0, 30 - uploaded_today)
+            return max(0, int(settings.SONG_UPLOAD_LIMIT) - uploaded_today)
         return float("inf")
 
 
