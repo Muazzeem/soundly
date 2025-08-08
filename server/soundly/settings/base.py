@@ -119,6 +119,7 @@ REST_AUTH = {
     "JWT_AUTH_SECURE": False,
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.api.serializers.CustomRegisterSerializer",
+    "JWT_SERIALIZER": "users.api.serializers.CustomJWTSerializer",
 }
 
 SIMPLE_JWT = {
@@ -134,6 +135,9 @@ ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.api.serializers.CustomRegisterSerializer"
+}
+REST_AUTH_SERIALIZERS = {
+    "JWT_SERIALIZER": "users.api.serializers.CustomJWTSerializer"
 }
 
 FRONTEND_BASE_URL = "https://www.soundlybeats.com"
