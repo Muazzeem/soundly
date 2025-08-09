@@ -72,7 +72,7 @@ class SongViewSet(viewsets.ModelViewSet):
             )
 
         # Regex for Spotify track URL validation
-        pattern = r"^(https?:\/\/)?(www\.)?(open|play)\.spotify\.com\/track\/[a-zA-Z0-9]+(\?[a-zA-Z0-9=&_\-\.]+)?$"
+        pattern = r"^(https?:\/\/)?(www\.)?(open|play)\.spotify\.com\/track\/[a-zA-Z0-9]+(\?[^\s#]*)?$"
 
         if not re.match(pattern, spotify_url):
             return Response(
