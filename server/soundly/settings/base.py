@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "core",
     "music",
     "otp",
+    "notifications",
     # "subscription",
 
 ]

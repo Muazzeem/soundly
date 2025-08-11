@@ -13,3 +13,10 @@ spotipy==2.24.0
 pycountry==24.6.1
 google-generativeai==0.8.5
 
+swapper==1.4.0
+jsonfield==3.1.0
+django-model-utils==5.0.0
+django-debug-toolbar==5.2.0
+django-cacheops==7.2
+packaging==25.0
+
