@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from notifications.models import Notification
-from music.api.views import SongExchangePagination
 from .serializers import NotificationHQSerializer
 
 
@@ -13,7 +12,6 @@ from .serializers import NotificationHQSerializer
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationHQSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = SongExchangePagination
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user).order_by('-timestamp')
@@ -42,14 +40,14 @@ class NotificationDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)
-
+    
 
 class UnreadNotificationsCountView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         unread_count = request.user.notifications.unread().count()
-
+        
         return Response({
             'count': unread_count
         })
@@ -95,7 +93,7 @@ class MarkAllAsDeletedView(APIView):
     def post(self, request):
         notifications = request.user.notifications.read()
         count = notifications.update(deleted=True)
-
+        
         return Response({
             'detail': f'{count} notifications marked as deleted'
         })
