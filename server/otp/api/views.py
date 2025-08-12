@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from otp.models import OTPValidation
 from .serializers import OTPValidationSerializer, ResendOTPSerializer
-
+from core.notification import send_notification
 
 
 class VerifyOTPView(APIView):
@@ -28,6 +28,7 @@ class VerifyOTPView(APIView):
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
+            send_notification(None, user, "account_verified", description="Your account was verified successfully")
 
             return Response(
                 {
