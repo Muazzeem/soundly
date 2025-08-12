@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
 from music.models import Song, SongExchange
-from core.notification import send_notification
+import random
 
 
 def get_song_with_platform(uid):
