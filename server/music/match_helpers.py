@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
 from music.models import Song, SongExchange
-from core.notification import send_notification
+import random
 
 
 def get_song_with_platform(uid):
@@ -93,6 +93,51 @@ def find_and_create_automatic_match(current_user, new_song):
     return matched_song, matched_user
 
 
+def find_and_create_random_match(current_user, new_song):
+    """
+    Find a random song match and create exchanges.
+    Returns: (matched_song, matched_user) or (None, None) if no songs available
+    """
+    available_songs = Song.objects.exclude(
+        uploader=current_user
+    ).select_related('platform', 'uploader')
+
+    songs_list = list(available_songs)
+
+    if not songs_list:
+        SongExchange.objects.create(
+            sender=current_user,
+            sent_song=new_song,
+            status='pending'
+        )
+        return None, None
+
+    matched_song = random.choice(songs_list)
+    matched_user = matched_song.uploader
+
+    # Create the original exchange
+    SongExchange.objects.create(
+        sender=current_user,
+        receiver=matched_user,
+        sent_song=new_song,
+        received_song=matched_song,
+        status='matched',
+        matched_at=timezone.now()
+    )
+
+    # Create the reciprocal exchange
+    SongExchange.objects.create(
+        sender=matched_user,
+        receiver=current_user,
+        sent_song=matched_song,
+        received_song=new_song,
+        status='matched',
+        matched_at=timezone.now()
+    )
+
+    return matched_song, matched_user
+
+
 def process_matches(user, original_song, genre_list, potential_matches):
     results = []
     seen = set()
@@ -151,6 +196,38 @@ def serialize_match(match, overlapping_genres, score, similarity, exchange):
             'overlapping_genres': overlapping_genres,
             'match_score': score,
             'similarity_percentage': round(similarity, 2)
+        },
+        'exchange_status': exchange.status,
+        'uploader_info': {
+            'id': str(match.uploader.id),
+            'email': match.uploader.email
+        } if hasattr(match, 'uploader') and match.uploader else None
+    }
+
+
+def serialize_random_match(match, exchange):
+    """
+    Serialize a random match without genre-based matching info
+    """
+    return {
+        'uid': str(match.uid),
+        'title': match.title,
+        'artist': match.artist,
+        'album': match.album,
+        'genre': match.genre,
+        'url': match.url,
+        'duration_seconds': match.duration_seconds,
+        'release_date': match.release_date,
+        'cover_image_url': match.cover_image_url,
+        'platform': {
+            'id': match.platform.id,
+            'name': match.platform.name
+        } if match.platform else None,
+        'match_info': {
+            'match_type': 'random',
+            'overlapping_genres': [],
+            'match_score': 0,
+            'similarity_percentage': 0
         },
         'exchange_status': exchange.status,
         'uploader_info': {
