@@ -15,6 +15,8 @@ from music.models import Song
 from users.choices import UserTypeChoice
 from .serializers import CustomPasswordResetSerializer, NotificationPreferenceSerializer, UserProfileSerializer
 
+from core.notification import send_notification
+
 User = get_user_model()
 GOOGLE_CLIENT_ID = "360088028570-suabtj6mk43m9vdp1n5cdn443i1rr9i0.apps.googleusercontent.com"
 
@@ -34,11 +36,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
-        print("Content-Type received:", request.content_type)
+        send_notification(None, request.user, "user_profile_updated", description="Your profile was updated successfully")
         return self.partial_update(request, *args, **kwargs)
 
     def get_object(self):
         return self.request.user
+
 
 
 class NotificationToggleView(APIView):
@@ -90,10 +93,15 @@ def google_auth(request):
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'user': {
-                'id': user.id,
+            'user_data': {
+                'pk': user.pk,
                 'email': user.email,
-                'name': f"{user.first_name} {user.last_name}".strip(),
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'type': user.type,
+                'profession': user.profession,
+                'country': user.country,
+                'city': user.city
             }
         }, status=status.HTTP_200_OK)
 

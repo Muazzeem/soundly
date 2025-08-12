@@ -24,7 +24,6 @@ def get_song_category_from_url(song_url):
 
         # Get track details
         track = sp.track(track_id)
-        print(track)
 
         song_title = track['name']
         artist_name = track['artists'][0]['name']

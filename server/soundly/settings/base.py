@@ -230,4 +230,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "hemonterroddur@gmail.com"
 EMAIL_HOST_PASSWORD = "wljvkdugijugvxlj"
 
-
+SONG_VALIDATION_PATERN = r'^(https?:\/\/)?(www\.)?(open|play)\.spotify\.com\/track\/[a-zA-Z0-9]+(\?[^\s#]*)?$'
