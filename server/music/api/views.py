@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny
 from collections import Counter
 from rest_framework.pagination import PageNumberPagination
 from music.models import Song, MusicPlatform, SongExchange
-from music.match_helpers import find_and_create_automatic_match
+from music.match_helpers import find_and_create_automatic_match, find_and_create_random_match
 from music.permissions import CanUploadSong
 from music.gen_ai import GenFunFact, generate_fun_fact
 from .serializers import (
@@ -19,7 +19,6 @@ from .serializers import (
     SongCreateSerializer,
     SongCreateSerializer,
 )
-from django.utils import timezone
 
 from rest_framework.permissions import IsAuthenticated
 from music.spotify_utils import get_song_category_from_url
@@ -61,44 +60,20 @@ class SongViewSet(viewsets.ModelViewSet):
         return Song.objects.select_related("platform").order_by("-created_at")
 
     def create(self, request, *args, **kwargs):
-        """
-        Create and upload a new song to the platform.
-
-        This endpoint handles two main workflows:
-        1. Matched Upload (`matched=true` in request):
-           - Validates and saves the uploaded Spotify track.
-           - Attempts to automatically match the uploaded song with another user's song using
-             `find_and_create_automatic_match()`.
-           - If a match is found, both the uploader and the matched user are notified, and the
-             response includes details of the matched song and user.
-           - If no match is found, the song is added to the matching pool.
-
-        2. Exchange Upload (`matched=false`):
-           - Saves the uploaded Spotify track.
-           - Creates a `SongExchange` record marking this song as sent by the current user.
-           - Selects a **random song** from another user that has never been matched with the current user before.
-           - If a random song is found, it marks the exchange as "matched" and assigns the matched song
-             to the current exchange record, along with the song's uploader as the receiver.
-           - If no song is available, the exchange remains pending.
-        """
-
         if not request.user.is_authenticated:
-            return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        spotify_url = request.data.get("url")
-        matched = str(request.data.get("matched", "")).lower() == "true"
+        spotify_url = request.data.get('url')
+        random_match = str(request.data.get('random_match', '')).lower() == 'true'
 
         if not spotify_url:
-            return Response({"error": "Spotify URL is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        pattern = settings.SONG_VALIDATION_PATERN
-        if not re.match(pattern, spotify_url):
-            return Response({"error": "Invalid Spotify track URL."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Spotify URL is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         info = get_song_category_from_url(spotify_url)
 
         spotify_platform, _ = MusicPlatform.objects.get_or_create(
-            name="Spotify", defaults={"domain": "spotify.com"}
+            name='Spotify',
+            defaults={'domain': 'spotify.com'}
         )
 
         song = GenFunFact(
@@ -110,135 +85,93 @@ class SongViewSet(viewsets.ModelViewSet):
         fun_fact = generate_fun_fact(song)
 
         song_data = {
-            "title": info["title"],
-            "artist": info["artist"],
-            "url": spotify_url,
-            "spotify_track_id": info["track_id"],
-            "album": info["album"],
-            "cover_image_url": info["cover_image_url"],
-            "platform": spotify_platform.id,
-            "duration_seconds": info["duration_seconds"],
-            "release_date": info["release_date"],
-            "genre": info["genres"],
-            "uploader": request.user.id,
-            "fun_fact": fun_fact["fact"],
+            'title': info['title'],
+            'artist': info['artist'],
+            'url': spotify_url,
+            'spotify_track_id': info['track_id'],
+            'album': info['album'],
+            'cover_image_url': info['cover_image_url'],
+            'platform': spotify_platform.id,
+            'duration_seconds': info['duration_seconds'],
+            'release_date': info['release_date'],
+            'genre': info['genres'],
+            'uploader': request.user.id,
+            'fun_fact': fun_fact['fact']
         }
 
         song_serializer = SongCreateSerializer(data=song_data)
-        if not song_serializer.is_valid():
-            return Response(song_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if song_serializer.is_valid():
+            song = song_serializer.save()
 
-        song_instance = song_serializer.save()
+            # Initialize variables
+            matched_song = None
+            matched_user = None
+            match_type = None
 
-        send_notification(None, request.user, "song_uploaded", song_instance,
-                          description="Your song was uploaded successfully", send_push=False)
+            if random_match:
+                matched_song, matched_user = find_and_create_random_match(request.user, song)
+                match_type = 'random'
+            else:
+                matched_song, matched_user = find_and_create_automatic_match(request.user, song)
+                match_type = 'automatic'
 
-        if matched:
-            matched_song, matched_user = find_and_create_automatic_match(request.user, song_instance)
             response_data = {
-                "message": "Song imported successfully",
-                "song": SongSerializer(song_instance).data,
-                "auto_matched": False
+                'message': 'Song imported successfully',
+                'song': SongSerializer(song).data
             }
 
             if matched_song and matched_user:
                 send_notification(
-                    None, matched_user, "song_matched", matched_song,
-                    description="Your song was matched with another user's song",
+                    None, matched_user, 'song_matched', matched_song,
+                    description=f'Your song was matched with another user\'s song ({match_type} match)',
                     send_push=True
                 )
 
-                profile_image_url = (
-                    request.build_absolute_uri(matched_user.profile_image.url)
-                    if matched_user.profile_image and hasattr(matched_user.profile_image, "url")
-                    else None
-                )
+                # Get profile image URL
+                if matched_user.profile_image and hasattr(matched_user.profile_image, 'url'):
+                    profile_image_url = request.build_absolute_uri(matched_user.profile_image.url)
+                else:
+                    profile_image_url = None
 
-                response_data.update({
-                    "auto_matched": True,
-                    "matched_with": {
-                        "song": SongSerializer(matched_song).data,
-                        "user": {
-                            "id": str(matched_user.id),
-                            "email": matched_user.email,
-                            "name": matched_user.first_name,
-                            "profile_image_url": profile_image_url,
-                            "profession": matched_user.profession or "",
-                            "country": matched_user.country or "",
-                            "city": matched_user.city or "",
-                        },
-                    },
-                })
+                # Update response based on match type
+                if match_type == 'random':
+                    response_data.update({
+                        'matched_with': {
+                            'song': SongSerializer(matched_song).data,
+                            'user': {
+                                'id': str(matched_user.id),
+                                'email': matched_user.email,
+                                'name': matched_user.first_name,
+                                'profile_image_url': profile_image_url,
+                                'profession': matched_user.profession or "",
+                                'country': matched_user.country or "",
+                                'city': matched_user.city or "",
+                            }
+                        }
+                    })
+                else:
+                    response_data.update({
+                        'matched_with': {
+                            'song': SongSerializer(matched_song).data,
+                            'user': {
+                                'id': str(matched_user.id),
+                                'email': matched_user.email,
+                                'name': matched_user.first_name,
+                                'profile_image_url': profile_image_url,
+                                'profession': matched_user.profession or "",
+                                'country': matched_user.country or "",
+                                'city': matched_user.city or "",
+                            }
+                        }
+                    })
             else:
-                response_data["message"] += ". No automatic match found, added to matching pool."
-
+                if random_match:
+                    response_data['message'] += '. No songs available for random match, added to matching pool.'
+                else:
+                    response_data['message'] += '. No automatic match found, added to matching pool.'
             return Response(response_data, status=status.HTTP_201_CREATED)
-
         else:
-            exchange_sender = SongExchange.objects.create(
-                sender=request.user,
-                sent_song=song_instance,
-                status="pending"
-            )
-            used_song_ids = SongExchange.objects.filter(
-                receiver=request.user,
-                received_song__isnull=False
-            ).values_list("received_song_id", flat=True)
-
-            random_song = (
-                Song.objects
-                .exclude(uploader=request.user)
-                .exclude(id__in=used_song_ids)
-                .order_by("?")
-                .first()
-            )
-            if random_song:
-                matched_user = random_song.uploader
-
-                exchange_sender.status = "matched"
-                exchange_sender.received_song = random_song
-                exchange_sender.receiver = request.user
-                exchange_sender.matched_at = timezone.now()
-                exchange_sender.save()
-
-                SongExchange.objects.create(
-                    sender=matched_user,
-                    sent_song=random_song,
-                    received_song=song_instance,
-                    receiver=matched_user,
-                    status="matched",
-                    matched_at=timezone.now()
-                )
-
-                profile_image_url = (
-                    request.build_absolute_uri(matched_user.profile_image.url)
-                    if matched_user.profile_image and hasattr(matched_user.profile_image, "url")
-                    else None
-                )
-
-                return Response({
-                    "message": "Song imported successfully. Random exchange complete for both users.",
-                    "song": SongSerializer(song_instance).data,
-                    "matched_with": {
-                        "song": SongSerializer(random_song).data,
-                        "user": {
-                            "id": str(matched_user.id),
-                            "email": matched_user.email,
-                            "name": matched_user.first_name,
-                            "profile_image_url": profile_image_url,
-                            "profession": matched_user.profession or "",
-                            "country": matched_user.country or "",
-                            "city": matched_user.city or "",
-                        },
-                    },
-                }, status=status.HTTP_201_CREATED)
-
-            else:
-                return Response({
-                    "message": "Song imported successfully. No songs found in exchange pool.",
-                    "song": SongSerializer(song_instance).data
-                }, status=status.HTTP_201_CREATED)
-
+            return Response(song_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SentSongsMatchedView(generics.ListAPIView):
     serializer_class = MatchedSongExchangeSerializer
