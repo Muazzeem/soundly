@@ -23,7 +23,7 @@ def song_exchange_statistics(request):
         ).select_related('sender', 'receiver')
 
         # Count stats
-        songs_shared = SongExchange.objects.filter(sender=user, status='completed').count()
+        songs_shared = SongExchange.objects.filter(sender=user, status='matched').count()
         songs_received = SongExchange.objects.filter(receiver=user, status='matched').count()
         received_or_completed = user_exchanges
 
