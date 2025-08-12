@@ -10,32 +10,42 @@ from music.models import SongExchange
 
 User = get_user_model()
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def song_exchange_statistics(request):
     user = request.user
 
     try:
-        # Fetch relevant exchanges
-        user_exchanges = SongExchange.objects.filter(
-            Q(receiver=user) |
-            Q(sender=user, status='completed')
+        # Get all exchanges involving the user
+        exchanges = SongExchange.objects.filter(
+            Q(sender=user) | Q(receiver=user)
         ).select_related('sender', 'receiver')
 
-        # Count stats
-        songs_shared = SongExchange.objects.filter(sender=user, status='matched').count()
-        songs_received = SongExchange.objects.filter(receiver=user, status='matched').count()
-        received_or_completed = user_exchanges
+        # Filter only matched or completed to avoid pending noise
+        exchanges = exchanges.filter(status__in=['matched', 'completed'])
 
-        # Track data
+        # Songs shared/received
+        songs_shared = SongExchange.objects.filter(sender=user, status__in=['matched', 'completed']).count()
+        songs_received = SongExchange.objects.filter(receiver=user, status__in=['matched', 'completed']).count()
+
+        # Track partners & location stats without double counting
         exchange_partners = set()
         countries, cities = set(), set()
         country_stats, city_stats, city_country_combinations = {}, {}, {}
 
-        for exchange in received_or_completed:
-            partner = exchange.sender if exchange.receiver == user else exchange.receiver
+        # Deduplicate by unique pair of users to avoid double counting
+        seen_pairs = set()
+
+        for exchange in exchanges:
+            partner = exchange.receiver if exchange.sender == user else exchange.sender
             if not partner:
                 continue
+
+            pair_key = tuple(sorted([user.id, partner.id]))
+            if pair_key in seen_pairs:
+                continue
+            seen_pairs.add(pair_key)
 
             exchange_partners.add(partner.id)
 
@@ -78,10 +88,10 @@ def song_exchange_statistics(request):
         top_countries = sorted(country_breakdown.items(), key=lambda x: x[1]['users_count'], reverse=True)[:10]
         top_cities = sorted(city_breakdown.items(), key=lambda x: x[1]['users_count'], reverse=True)[:10]
 
-        response_data = {
+        return Response({
             'songs_shared': songs_shared,
             'songs_received': songs_received,
-            'songs_received_or_completed': received_or_completed.count(),
+            'total_unique_exchanges': len(seen_pairs),
             'users_exchanged_with': len(exchange_partners),
             'countries_involved': len(countries),
             'detailed_stats': {
@@ -94,22 +104,13 @@ def song_exchange_statistics(request):
                 'by_city_country': city_country_breakdown
             },
             'top_locations': {
-                'countries': [
-                    {'country': c, **stats} for c, stats in top_countries
-                ],
-                'cities': [
-                    {'city': c, **stats} for c, stats in top_cities
-                ]
+                'countries': [{'country': c, **stats} for c, stats in top_countries],
+                'cities': [{'city': c, **stats} for c, stats in top_cities]
             }
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        return Response(
-            {'error': f'An error occurred while fetching statistics: {str(e)}'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -118,48 +119,37 @@ def user_summary_statistics(request):
     user = request.user
 
     try:
-        # Songs Shared
-        songs_shared = SongExchange.objects.filter(sender=user).count()
-
-        # Unique Connections (users exchanged with as sender or receiver)
-        exchange_partners = SongExchange.objects.filter(
-            Q(sender=user) | Q(receiver=user)
-        ).exclude(
-            Q(sender=user, receiver=None) | Q(receiver=user, sender=None)
-        ).values_list(
-            'sender', 'receiver'
-        )
-
+        # Get unique exchange partners (avoid double counting reverse matches)
         partner_ids = set()
-        for sender_id, receiver_id in exchange_partners:
-            if sender_id and sender_id != user.id:
-                partner_ids.add(sender_id)
-            if receiver_id and receiver_id != user.id:
-                partner_ids.add(receiver_id)
+        exchanges = SongExchange.objects.filter(Q(sender=user) | Q(receiver=user)).filter(status__in=['matched', 'completed'])
+        seen_pairs = set()
 
+        for exchange in exchanges:
+            partner = exchange.receiver if exchange.sender == user else exchange.sender
+            if not partner:
+                continue
+            pair_key = tuple(sorted([user.id, partner.id]))
+            if pair_key in seen_pairs:
+                continue
+            seen_pairs.add(pair_key)
+            partner_ids.add(partner.id)
+
+        # Songs shared (unique sent songs)
+        songs_shared = SongExchange.objects.filter(sender=user, status__in=['matched', 'completed']).values('sent_song').distinct().count()
+
+        # Countries connected with
         countries = User.objects.filter(id__in=partner_ids).exclude(country__isnull=True).values_list('country', flat=True).distinct()
 
-        # Days active (from first song exchange to today)
-        first_exchange = SongExchange.objects.filter(
-            Q(sender=user) | Q(receiver=user)
-        ).order_by('created_at').first()
+        # Days active
+        first_exchange = exchanges.order_by('created_at').first()
+        days_active = (now().date() - first_exchange.created_at.date()).days + 1 if first_exchange else 0
 
-        if first_exchange:
-            days_active = (now().date() - first_exchange.created_at.date()).days + 1
-        else:
-            days_active = 0
-
-        response_data = {
+        return Response({
             'songs_shared': songs_shared,
             'connections': len(partner_ids),
             'countries': len(countries),
             'days_active': days_active
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        return Response(
-            {'error': f'An error occurred while fetching user summary: {str(e)}'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
