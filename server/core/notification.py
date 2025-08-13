@@ -13,7 +13,7 @@ User = get_user_model()
 
 def send_notification(
     sender, recipient, verb, action_object=None, target=None, description=None,
-    send_push=False,
+    send_push=False, target_url=None
 ):
     """
     Send a notification through Django's notification system and optionally as a push notification.
@@ -37,7 +37,8 @@ def send_notification(
             action_object=action_object,
             target=target,
             description=description,
-            public=False
+            public=False,
+            extra_data={"song_url": target_url}
         )
 
         device_token = User.objects.get(email=recipient.email).device_token
