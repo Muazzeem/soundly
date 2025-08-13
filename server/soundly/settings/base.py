@@ -145,7 +145,10 @@ DJANGO_NOTIFICATIONS_CONFIG = {
     'USE_JSONFIELD': True
 }
 
+<<<<<<< HEAD
 FRONTEND_BASE_URL = "https://www.soundlybeats.com"
+=======
+>>>>>>> 68f1a53 (deploy code)
 FRONTEND_BASE_URL = "https://www.soundlybeats.com"
 PASSWORD_RESET_CONFIRM_URL = "reset-password/{uid}/{token}/"
 
