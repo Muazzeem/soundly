@@ -14,6 +14,7 @@ class ContentTypeSerializer(serializers.ModelSerializer):
 class NotificationHQSerializer(serializers.ModelSerializer):
     target_content_type = ContentTypeSerializer(read_only=True)
     created_ago = serializers.SerializerMethodField()
+    song_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
@@ -35,3 +36,9 @@ class NotificationHQSerializer(serializers.ModelSerializer):
         else:
             days = time_difference.days
             return f"{days} day{'s' if days > 1 else ''} ago"
+
+    def get_song_url(self, obj):
+        if obj.data:
+            return obj.data.get('extra_data', {}).get('song_url')
+        else:
+            return None
