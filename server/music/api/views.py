@@ -116,7 +116,7 @@ class SongViewSet(viewsets.ModelViewSet):
             if matched_song and matched_user:
                 send_notification(
                     None, matched_user, 'song_matched', matched_song,
-                    description=f'Your song was matched with another user\'s song ({match_type} match)',
+                    description=f'Your song was matched with another user\'s song.',
                     send_push=True
                 )
 
