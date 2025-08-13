@@ -113,11 +113,23 @@ class SongViewSet(viewsets.ModelViewSet):
                 'song': SongSerializer(song).data
             }
 
+            send_notification(
+                None, request.user, 'song_uploaded', matched_song,
+                description=f'Your song was uploaded successfully.',
+                target_url=spotify_url
+            )
+
             if matched_song and matched_user:
+                send_notification(
+                    None, request.user, 'song_matched', matched_song,
+                    description=f'Your song was matched with another user\'s song.',
+                    send_push=True, target_url=matched_song.url if matched_song else None
+                )
+
                 send_notification(
                     None, matched_user, 'song_matched', matched_song,
                     description=f'Your song was matched with another user\'s song.',
-                    send_push=True
+                    send_push=True, target_url=matched_song.url if matched_song else None
                 )
 
                 # Get profile image URL
