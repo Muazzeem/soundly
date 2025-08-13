@@ -141,6 +141,10 @@ REST_AUTH_SERIALIZERS = {
     "JWT_SERIALIZER": "users.api.serializers.CustomJWTSerializer"
 }
 
+DJANGO_NOTIFICATIONS_CONFIG = {
+    'USE_JSONFIELD': True
+}
+
 FRONTEND_BASE_URL = "https://www.soundlybeats.com"
 PASSWORD_RESET_CONFIRM_URL = "reset-password/{uid}/{token}/"
 
