@@ -76,7 +76,6 @@ class Song(UUIDBaseModel, TimeStampModel):
             uploaded_today = Song.objects.filter(
                 uploader=self.uploader, created_at__date=today
             ).count()
-            print(uploaded_today)
 
             return max(0, int(settings.SONG_UPLOAD_LIMIT) - uploaded_today)
         return float("inf")

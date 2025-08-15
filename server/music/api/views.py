@@ -65,6 +65,7 @@ class SongViewSet(viewsets.ModelViewSet):
 
         spotify_url = request.data.get('url')
         genre_match = str(request.data.get('genre_match', 'false')).lower()
+        print("Genre match is ",genre_match)
 
         if not spotify_url:
             return Response({'error': 'Spotify URL is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -108,10 +109,11 @@ class SongViewSet(viewsets.ModelViewSet):
             matched_user = None
             match_type = None
 
-            if genre_match:
+            if genre_match == 'true':
                 matched_song, matched_user = find_and_create_automatic_match(request.user, song)
                 match_type = 'automatic'
-            else:
+
+            elif genre_match == 'false':
                 matched_song, matched_user = find_and_create_random_match(request.user, song)
                 match_type = 'random'
 
