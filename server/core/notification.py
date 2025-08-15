@@ -1,4 +1,3 @@
-import logging
 from django.contrib.auth import get_user_model
 
 
@@ -6,8 +5,6 @@ from notifications.signals import notify
 from notifications.models import Notification as NotificationModel
 
 from .fcm_notification import send_push_notification
-# Set up logging
-logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -24,7 +21,6 @@ def send_notification(
             try:
                 sender = User.objects.get(email="admin@soundlybeats.com")
             except User.DoesNotExist:
-                logger.warning("Admin user not found, using system user")
                 sender, created = User.objects.get_or_create(
                     first_name="system",
                     defaults={"email": "system@soundlybeats.com", "is_active": False}
@@ -46,7 +42,6 @@ def send_notification(
             return False
         else:
             if send_push:
-                print("Sending push notification")
                 send_push_notification(
                     device_token,
                     "Your song was uploaded successfully",
@@ -56,5 +51,4 @@ def send_notification(
 
         return True
     except Exception as e:
-        logger.error(f"Failed to send notification: {e}")
         return False
