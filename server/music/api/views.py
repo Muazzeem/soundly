@@ -57,7 +57,7 @@ class SongViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         spotify_url = request.data.get('url')
-        random_match = str(request.data.get('random_match', '')).lower() == 'true'
+        genre_match = str(request.data.get('genre_match', 'false')).lower()
 
         if not spotify_url:
             return Response({'error': 'Spotify URL is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -101,12 +101,12 @@ class SongViewSet(viewsets.ModelViewSet):
             matched_user = None
             match_type = None
 
-            if random_match:
-                matched_song, matched_user = find_and_create_random_match(request.user, song)
-                match_type = 'random'
-            else:
+            if genre_match:
                 matched_song, matched_user = find_and_create_automatic_match(request.user, song)
                 match_type = 'automatic'
+            else:
+                matched_song, matched_user = find_and_create_random_match(request.user, song)
+                match_type = 'random'
 
             response_data = {
                 'message': 'Song imported successfully',
@@ -170,10 +170,10 @@ class SongViewSet(viewsets.ModelViewSet):
                         }
                     })
             else:
-                if random_match:
-                    response_data['message'] += '. No songs available for random match, added to matching pool.'
+                if genre_match:
+                    response_data['message'] += '. No songs available for genre match, added to matching pool.'
                 else:
-                    response_data['message'] += '. No automatic match found, added to matching pool.'
+                    response_data['message'] += '. No songs available for random match, added to matching pool.'
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             return Response(song_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
