@@ -79,7 +79,7 @@ class SongViewSet(viewsets.ModelViewSet):
 
         song = GenFunFact(
             title=info['title'],
-            artist=info['artist'],
+            artist=info['artists'],
             url=spotify_url
         )
 
@@ -87,7 +87,7 @@ class SongViewSet(viewsets.ModelViewSet):
 
         song_data = {
             'title': info['title'],
-            'artist': info['artist'],
+            'artist': info['artists'],
             'url': spotify_url,
             'spotify_track_id': info['track_id'],
             'album': info['album'],
@@ -95,7 +95,7 @@ class SongViewSet(viewsets.ModelViewSet):
             'platform': spotify_platform.id,
             'duration_seconds': info['duration_seconds'],
             'release_date': info['release_date'],
-            'genre': info['genres'],
+            'genre': info['genres'] if len(info['genres']) > 0 else ["unknown"],
             'uploader': request.user.id,
             'fun_fact': fun_fact['fact']
         }
@@ -121,6 +121,9 @@ class SongViewSet(viewsets.ModelViewSet):
                 'message': 'Song imported successfully',
                 'song': SongSerializer(song).data
             }
+
+            if len(info['genres']) == 0 and genre_match == 'true':
+                response_data['message'] += '.This song does not have a genre set by the artist. It will be exchanged in the Random Match pool'
 
             send_notification(
                 None, request.user, 'song_uploaded', matched_song,
