@@ -8,7 +8,7 @@ services:
             - soundly-db:/var/lib/postgresql/data
     server:
         container_name: soundly_server
-        image: ghcr.io/mubarak117136/soundly:dev
+        image: ghcr.io/Muazzeem/soundly:dev
         environment:
             - DJANGO_SETTINGS_MODULE=soundly.settings.dev
         command: python manage.py runserver 0.0.0.0:8000
