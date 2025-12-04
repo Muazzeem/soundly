@@ -28,8 +28,8 @@ jobs:
         - name: Development Build Script
           run: |
             docker build -f ./server/Dockerfile-dev . -t soundly:dev
-            docker tag soundly:dev ghcr.io/Muazzeem/soundly:dev
-            docker push ghcr.io/Muazzeem/soundly:dev
+            docker tag soundly:dev ghcr.io/muazzeem/soundly:dev
+            docker push ghcr.io/muazzeem/soundly:dev
     production-build:
         name: Production Build
         if: github.ref == 'refs/heads/stable'
@@ -48,8 +48,8 @@ jobs:
         - name: Production Build Script
           run: |
             docker build -f ./server/Dockerfile-prod . -t soundly:prod
-            docker tag soundly:prod ghcr.io/Muazzeem/soundly:prod
-            docker push ghcr.io/Muazzeem/soundly:prod
+            docker tag soundly:prod ghcr.io/muazzeem/soundly:prod
+            docker push ghcr.io/muazzeem/soundly:prod
     production-deploy:
         name: Production Deploy
         needs: production-build
