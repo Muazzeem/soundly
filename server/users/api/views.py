@@ -1,6 +1,9 @@
+import logging
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -155,10 +158,9 @@ def google_auth(request):
     except Exception as e:
         # Log the error for debugging
         import traceback
-        print(f"Google OAuth error: {str(e)}")
-        print(traceback.format_exc())
+        logger.error(f"Google OAuth error: {str(e)}", exc_info=True)
         return Response(
-            {'error': f'Authentication failed: {str(e)}'}, 
+            {'error': 'Authentication failed. Please try again.'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

@@ -1,9 +1,15 @@
 import os
 import json
+import logging
 import google.generativeai as genai
 
+logger = logging.getLogger(__name__)
+
 # --- Configure your Gemini API key ---
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "AIzaSyBqYoA640Z0-EvsH4a5-I7ZJi_cyIA4W8g")
+# Must be set via environment variable - no default for security
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    logger.warning("GOOGLE_API_KEY not set in environment variables")
 
 # --- Song class for structured input ---
 class GenFunFact:
@@ -75,4 +81,4 @@ if __name__ == "__main__":
     )
 
     fun_fact = generate_fun_fact(song)
-    print(fun_fact)
+    logger.info(f"Generated fun fact: {fun_fact}")
