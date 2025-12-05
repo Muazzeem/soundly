@@ -85,8 +85,9 @@ def song_exchange_statistics(request):
             'users_exchanged_with': len(exchange_partners),
             'countries_involved': len(countries),
             'detailed_stats': {
-                'countries_list': list(countries),
-                'cities_list': list(cities),
+                'songs_received': songs_received,
+                'countries_list': list(countries) if countries else [],
+                'cities_list': list(cities) if cities else [],
             },
             'geographical_breakdown': {
                 'by_country': country_breakdown,
@@ -96,10 +97,10 @@ def song_exchange_statistics(request):
             'top_locations': {
                 'countries': [
                     {'country': c, **stats} for c, stats in top_countries
-                ],
+                ] if top_countries else [],
                 'cities': [
                     {'city': c, **stats} for c, stats in top_cities
-                ]
+                ] if top_cities else []
             }
         }
 

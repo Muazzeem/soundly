@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 from otp.models import OTPValidation
+from users.models import Friendship
 
 User = get_user_model()
 
@@ -169,6 +170,59 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['receive_notifications']
+
+
+class FriendSerializer(serializers.ModelSerializer):
+    """Serializer for friend user data"""
+    name = serializers.SerializerMethodField()
+    profile_image_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'uid',
+            'email',
+            'name',
+            'first_name',
+            'last_name',
+            'profession',
+            'country',
+            'city',
+            'profile_image_url',
+        ]
+        read_only_fields = fields
+    
+    def get_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    
+    def get_profile_image_url(self, obj):
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_image.url)
+        return None
+
+
+class FriendshipSerializer(serializers.ModelSerializer):
+    """Serializer for friendship relationships"""
+    friend = serializers.SerializerMethodField()
+    status = serializers.CharField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    accepted_at = serializers.DateTimeField(read_only=True)
+    
+    class Meta:
+        model = Friendship
+        fields = ['uid', 'friend', 'status', 'created_at', 'accepted_at']
+        read_only_fields = fields
+    
+    def get_friend(self, obj):
+        """Return the other user in the friendship"""
+        request = self.context.get('request')
+        if request and request.user:
+            # Return the user who is NOT the current user
+            friend = obj.addressee if obj.requester == request.user else obj.requester
+            return FriendSerializer(friend, context={'request': request}).data
+        return None
 
 
 
