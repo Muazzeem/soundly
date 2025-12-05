@@ -2,6 +2,9 @@ from rest_framework import serializers
 from music.models import Song, MusicPlatform, SongExchange
 from users.choices import UserTypeChoice
 from users.api.serializers import UserSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class MusicPlatformSerializer(serializers.ModelSerializer):
@@ -10,9 +13,37 @@ class MusicPlatformSerializer(serializers.ModelSerializer):
         fields = ['uid', 'name', 'domain']
 
 
+class SongUploaderSerializer(serializers.ModelSerializer):
+    """Serializer for song uploader with profile image URL"""
+    name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'name',
+            'profession',
+            'country',
+            'city',
+            'profile_image',
+            'type',
+        ]
+    
+    def get_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    
+    def get_profile_image(self, obj):
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_image.url)
+        return None
+
+
 class SongSerializer(serializers.ModelSerializer):
     platform = MusicPlatformSerializer(read_only=True)
-    uploader = UserSerializer(read_only=True)
+    uploader = SongUploaderSerializer(read_only=True)
     remaining_uploads = serializers.SerializerMethodField()
 
     class Meta:

@@ -3,6 +3,7 @@ from django.urls import include, path
 from django.contrib import admin
 
 from search import views as search_views
+from soundly.views import api_root
 
 from dj_rest_auth.views import LoginView, PasswordResetConfirmView
 from dj_rest_auth.registration.views import RegisterView
@@ -11,6 +12,7 @@ from users.api.views import CustomPasswordResetView
 
 
 urlpatterns = [
+    path("", api_root, name="api_root"),
     path("admin/", admin.site.urls),
     path("search/", search_views.search, name="search"),
     path("auth/signup/", RegisterView.as_view(), name="account_signup"),
