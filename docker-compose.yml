@@ -3,7 +3,12 @@ services:
         image: postgres:16
         container_name: soundly_db
         environment:
-            - POSTGRES_HOST_AUTH_METHOD=trust
+            # For development, you can use trust, but it's better to use passwords
+            # Set POSTGRES_PASSWORD in your .env file for better security
+            - POSTGRES_DB=${DB_NAME:-soundly_dev}
+            - POSTGRES_USER=${DB_USER:-postgres}
+            - POSTGRES_PASSWORD=${DB_PASSWORD:-dev_password_change_me}
+            - POSTGRES_HOST_AUTH_METHOD=${DB_AUTH_METHOD:-scram-sha-256}
         volumes:
             - soundly-db:/var/lib/postgresql/data
     server:

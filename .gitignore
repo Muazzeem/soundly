@@ -208,3 +208,8 @@ __marimo__/
 
 media/
 client_secret_360088028570-suabtj6mk43m9vdp1n5cdn443i1rr9i0.apps.googleusercontent.com.json
+
+# Firebase service account keys (CRITICAL: Contains private keys)
+**/firebase-adminsdk-*.json
+**/*firebase*admin*.json
+server/core/soundlybeats-firebase-adminsdk-*.json

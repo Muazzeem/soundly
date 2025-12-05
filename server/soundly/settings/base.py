@@ -7,7 +7,9 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 SECRET_KEY = config("SECRET_KEY")
 
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS should be set in environment-specific settings
+# Default to empty list - must be explicitly set in dev/prod
+ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "home",
@@ -98,8 +100,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": config("DB_NAME"),
         "USER": config("DB_USER"),
-        "HOST": "db",
-        "PORT": 5432,
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default="db"),
+        "PORT": config("DB_PORT", default=5432, cast=int),
     }
 }
 
@@ -117,14 +120,18 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": "auth",
     "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
-    "JWT_AUTH_SECURE": False,
-    "JWT_AUTH_HTTPONLY": False,
+    # Security settings - override in production.py
+    "JWT_AUTH_SECURE": config("JWT_AUTH_SECURE", default=False, cast=bool),
+    "JWT_AUTH_HTTPONLY": config("JWT_AUTH_HTTPONLY", default=True, cast=bool),
     "REGISTER_SERIALIZER": "users.api.serializers.CustomRegisterSerializer",
     "JWT_SERIALIZER": "users.api.serializers.CustomJWTSerializer",
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
+    # Reduced token lifetime for better security
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=config("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=60, cast=int)
+    ),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
@@ -219,19 +226,30 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 20,
 }
-CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS configuration - should be overridden in environment-specific settings
+# Never use CORS_ALLOW_ALL_ORIGINS = True in production
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=False, cast=bool)
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS",
+    default="",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
 
 
-SPOTIPY_CLIENT_ID = '934d05f07a504ef6a8a6ebdc7e94cd27'
-SPOTIPY_CLIENT_SECRET = 'b36e404fa65244b0a8df602117ebf803'
+# Spotify API credentials - must be set via environment variables
+SPOTIPY_CLIENT_ID = config("SPOTIPY_CLIENT_ID", default="")
+SPOTIPY_CLIENT_SECRET = config("SPOTIPY_CLIENT_SECRET", default="")
 
-DEFAULT_FROM_EMAIL = "hemonterroddur@gmail.com"
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "hemonterroddur@gmail.com"
-EMAIL_HOST_PASSWORD = "wljvkdugijugvxlj"
+# Email configuration - must be set via environment variables
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@example.com")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
 SONG_VALIDATION_PATERN = r'^(https?:\/\/)?(www\.)?(open|play)\.spotify\.com\/track\/[a-zA-Z0-9]+(\?[^\s#]*)?$'

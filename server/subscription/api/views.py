@@ -1,6 +1,8 @@
-
 import json
+import logging
 from rest_framework.response import Response
+
+logger = logging.getLogger(__name__)
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, mixins
@@ -71,7 +73,7 @@ class StripeWebhookView(APIView):
         data = json.loads(request.body)
 
         if data["type"] == "invoice.payment_succeeded":
-            print(data)
+            logger.info(f"Stripe webhook received: invoice.payment_succeeded for customer {data.get('data', {}).get('object', {}).get('customer', 'unknown')}")
             create_subscription(data)
 
         if data["type"] == "customer.subscription.deleted":
