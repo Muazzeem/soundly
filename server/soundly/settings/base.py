@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "core",
     "music",
     "otp",
+    "notifications",
     # "subscription",
 
 ]
@@ -119,6 +120,7 @@ REST_AUTH = {
     "JWT_AUTH_SECURE": False,
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.api.serializers.CustomRegisterSerializer",
+    "JWT_SERIALIZER": "users.api.serializers.CustomJWTSerializer",
 }
 
 SIMPLE_JWT = {
@@ -135,8 +137,15 @@ ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.api.serializers.CustomRegisterSerializer"
 }
+REST_AUTH_SERIALIZERS = {
+    "JWT_SERIALIZER": "users.api.serializers.CustomJWTSerializer"
+}
 
-FRONTEND_BASE_URL = "http://localhost:8080"
+DJANGO_NOTIFICATIONS_CONFIG = {
+    'USE_JSONFIELD': True
+}
+
+FRONTEND_BASE_URL = "https://www.soundlybeats.com"
 PASSWORD_RESET_CONFIRM_URL = "reset-password/{uid}/{token}/"
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -225,4 +234,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "hemonterroddur@gmail.com"
 EMAIL_HOST_PASSWORD = "wljvkdugijugvxlj"
 
-
+SONG_VALIDATION_PATERN = r'^(https?:\/\/)?(www\.)?(open|play)\.spotify\.com\/track\/[a-zA-Z0-9]+(\?[^\s#]*)?$'
