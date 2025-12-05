@@ -1,7 +1,10 @@
 import re
+import logging
 from django.conf import settings
 
 from rest_framework import viewsets, status
+
+logger = logging.getLogger(__name__)
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -58,7 +61,7 @@ class SongViewSet(viewsets.ModelViewSet):
 
         spotify_url = request.data.get('url')
         genre_match = str(request.data.get('genre_match', 'false')).lower()
-        print("Genre match is ",genre_match)
+        logger.debug(f"Genre match setting: {genre_match}")
 
         if not spotify_url:
             return Response({'error': 'Spotify URL is required.'}, status=status.HTTP_400_BAD_REQUEST)

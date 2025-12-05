@@ -3,7 +3,11 @@ services:
         image: postgres:16
         container_name: soundly_db
         environment:
-            - POSTGRES_HOST_AUTH_METHOD=trust
+            - POSTGRES_DB=${DB_NAME}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+            # Use password authentication instead of trust
+            - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
         volumes:
             - soundly-db:/var/lib/postgresql/data
     server:
@@ -11,7 +15,13 @@ services:
         image: ghcr.io/mubarak117136/soundly:prod
         environment:
             - DJANGO_SETTINGS_MODULE=soundly.settings.production
-        command: gunicorn -w 6 -b unix:/app/server/socket/SERVER.sock soundly.wsgi:application
+        # Use startup script to ensure directories exist, then start gunicorn
+        command: >
+            sh -c "
+            mkdir -p /app/server/logs /app/server/static /app/server/media /app/server/socket &&
+            chmod -R 755 /app/server/logs /app/server/static /app/server/media /app/server/socket &&
+            gunicorn -w 6 -b unix:/app/server/socket/SERVER.sock soundly.wsgi:application
+            "
         volumes:
             - ./server/.env:/app/server/.env
             - ./server/static:/app/server/static

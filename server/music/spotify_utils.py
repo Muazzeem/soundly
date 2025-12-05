@@ -1,7 +1,10 @@
+import logging
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import re
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 def get_spotify_client():
     """Get authenticated Spotify client"""
@@ -41,7 +44,7 @@ def get_song_category_from_url(song_url):
             all_genres.update(artist_data.get('genres', []))
 
         artist_names_str = ", ".join(artist_names)
-        print(artist_names_str)
+        logger.debug(f"Retrieved artist names: {artist_names_str}")
 
         return {
             'title': song_title,
@@ -55,5 +58,5 @@ def get_song_category_from_url(song_url):
         }
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"Error fetching song details from Spotify: {e}", exc_info=True)
         return None
