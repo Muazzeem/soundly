@@ -201,6 +201,32 @@ class SentSongsMatchedView(generics.ListAPIView):
                 "receiver",
                 "sent_song__platform",
                 "received_song__platform",
+                "received_song__uploader",
+            )
+            .order_by("-created_at")
+        )
+
+
+class ReceivedSongsMatchedView(generics.ListAPIView):
+    """View for songs received by the current user"""
+    serializer_class = MatchedSongExchangeSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = SongExchangePagination
+
+    def get_queryset(self):
+        return (
+            SongExchange.objects.filter(
+                receiver=self.request.user,
+                status__in=["matched", "completed"],
+                received_song__isnull=False,
+            )
+            .select_related(
+                "sent_song",
+                "received_song",
+                "sender",
+                "sent_song__platform",
+                "received_song__platform",
+                "received_song__uploader",
             )
             .order_by("-created_at")
         )
