@@ -11,7 +11,11 @@ from dj_rest_auth.views import PasswordResetView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework import generics
+from music.models import Song
+from users.choices import UserTypeChoice
 from .serializers import CustomPasswordResetSerializer, NotificationPreferenceSerializer, UserProfileSerializer
+
+from core.notification import send_notification
 
 User = get_user_model()
 GOOGLE_CLIENT_ID = "360088028570-suabtj6mk43m9vdp1n5cdn443i1rr9i0.apps.googleusercontent.com"
@@ -32,11 +36,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
-        print("Content-Type received:", request.content_type)
+        send_notification(None, request.user, "user_profile_updated", description="Your profile was updated successfully")
         return self.partial_update(request, *args, **kwargs)
 
     def get_object(self):
         return self.request.user
+
 
 
 class NotificationToggleView(APIView):
@@ -88,10 +93,15 @@ def google_auth(request):
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'user': {
-                'id': user.id,
+            'user_data': {
+                'pk': user.pk,
                 'email': user.email,
-                'name': f"{user.first_name} {user.last_name}".strip(),
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'type': user.type,
+                'profession': user.profession,
+                'country': user.country,
+                'city': user.city
             }
         }, status=status.HTTP_200_OK)
 
@@ -106,3 +116,28 @@ def google_auth(request):
 
 class CustomPasswordResetView(PasswordResetView):
     serializer_class = CustomPasswordResetSerializer
+
+
+@api_view(['GET'])
+def check_daily_upload_limit(request):
+    user = request.user
+
+    if not user or not user.is_authenticated:
+        return Response(
+            {"error": "Not authenticated"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    if user.type == UserTypeChoice.BASIC:
+        temp_song = Song(uploader=user)
+        remaining_uploads = temp_song.remaining_uploads
+
+        return Response({
+            "remaining_uploads": remaining_uploads
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({
+            "response": "Unlimited uploads"
+        },
+        status=status.HTTP_200_OK)
+

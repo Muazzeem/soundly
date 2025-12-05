@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from music.models import Song, MusicPlatform, SongExchange
+from users.choices import UserTypeChoice
 from users.api.serializers import UserSerializer
 
 
@@ -21,9 +22,11 @@ class SongSerializer(serializers.ModelSerializer):
             'duration_seconds', 'release_date', 'cover_image_url',
             'platform', 'uploader', 'created_at', 'updated_at'
         ]
-    
+
     def get_remaining_uploads(self, obj):
-        return obj.remaining_uploads
+        if obj.uploader and obj.uploader.type == UserTypeChoice.BASIC:
+            return obj.remaining_uploads
+        return None
 
 
 class SongCreateSerializer(serializers.ModelSerializer):
