@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.contrib.auth.models import BaseUserManager
-from core.models import UUIDBaseModel
+from core.models import UUIDBaseModel, TimeStampModel
 from django.utils.translation import gettext_lazy as _
 
 from .choices import UserTypeChoice
@@ -83,3 +83,91 @@ class User(AbstractUser, UUIDBaseModel):
             parts.append(self.location)
         return " • ".join(parts)
 
+    def get_friends(self):
+        """Get all accepted friends"""
+        friends = Friendship.objects.filter(
+            models.Q(requester=self) | models.Q(addressee=self),
+            status='accepted'
+        ).select_related('requester', 'addressee')
+        
+        friend_list = []
+        for friendship in friends:
+            if friendship.requester == self:
+                friend_list.append(friendship.addressee)
+            else:
+                friend_list.append(friendship.requester)
+        return friend_list
+
+    def is_friends_with(self, user):
+        """Check if users are friends"""
+        return Friendship.objects.filter(
+            models.Q(requester=self, addressee=user) | models.Q(requester=user, addressee=self),
+            status='accepted'
+        ).exists()
+
+    def get_friend_status(self, user):
+        """Get relationship status with another user"""
+        if self == user:
+            return 'self'
+        
+        friendship = Friendship.objects.filter(
+            models.Q(requester=self, addressee=user) | models.Q(requester=user, addressee=self)
+        ).first()
+        
+        if not friendship:
+            return 'none'
+        
+        if friendship.status == 'accepted':
+            return 'friends'
+        elif friendship.requester == self:
+            return 'pending_sent'
+        else:
+            return 'pending_received'
+
+
+class Friendship(UUIDBaseModel, TimeStampModel):
+    """Friendship model for two-way friend relationships"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+    ]
+    
+    requester = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='sent_friend_requests'
+    )
+    addressee = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='received_friend_requests'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'friendships'
+        unique_together = ('requester', 'addressee')
+        indexes = [
+            models.Index(fields=['requester', 'status']),
+            models.Index(fields=['addressee', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.requester.display_name} -> {self.addressee.display_name} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # Prevent self-friendship
+        if self.requester == self.addressee:
+            raise ValueError("Users cannot be friends with themselves")
+        
+        # Set accepted_at when status changes to accepted
+        if self.status == 'accepted' and not self.accepted_at:
+            from django.utils import timezone
+            self.accepted_at = timezone.now()
+        
+        super().save(*args, **kwargs)
