@@ -89,7 +89,7 @@ STRIPE_API_KEY = config("STRIPE_API_KEY")
 MONTHLY_PRICE_ID = "price_1Rqw6kAMYVKKEks2PHPaqjhl"
 YEARLY_PRICE_ID = "price_1Rqw69AMYVKKEks2BtxXCxL8"
 
-SONG_UPLOAD_LIMIT = config("SONG_UPLOAD_LIMIT")
+SONG_UPLOAD_LIMIT = 30
 
 WSGI_APPLICATION = "soundly.wsgi.application"
 
@@ -144,11 +144,6 @@ REST_AUTH_SERIALIZERS = {
 DJANGO_NOTIFICATIONS_CONFIG = {
     'USE_JSONFIELD': True
 }
-
-<<<<<<< HEAD
-FRONTEND_BASE_URL = "https://www.soundlybeats.com"
-=======
->>>>>>> 68f1a53 (deploy code)
 FRONTEND_BASE_URL = "https://www.soundlybeats.com"
 PASSWORD_RESET_CONFIRM_URL = "reset-password/{uid}/{token}/"
 

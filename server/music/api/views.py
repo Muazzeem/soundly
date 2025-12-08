@@ -57,7 +57,6 @@ class SongViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Song.objects.select_related("platform").order_by("-created_at")
-        return Song.objects.select_related("platform").order_by("-created_at")
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
