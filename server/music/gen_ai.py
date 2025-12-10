@@ -3,7 +3,7 @@ import json
 import google.generativeai as genai
 
 # --- Configure your Gemini API key ---
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "AIzaSyDmbRzoOvk-hZXmwFJgSaHAIFkPrBobZKA")
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "AIzaSyAMaydye9zcwRtHey4RcraY_A4XBkdOoM4")
 
 # --- Song class for structured input ---
 class GenFunFact:
