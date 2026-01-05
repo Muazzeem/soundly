@@ -8,9 +8,16 @@ logger = logging.getLogger(__name__)
 
 def get_spotify_client():
     """Get authenticated Spotify client"""
+    client_id = settings.SPOTIPY_CLIENT_ID
+    client_secret = settings.SPOTIPY_CLIENT_SECRET
+    
+    if not client_id or not client_secret:
+        logger.error("Spotify API credentials (SPOTIPY_CLIENT_ID and SPOTIPY_CLIENT_SECRET) are not configured")
+        raise ValueError("Spotify API credentials are not configured. Please set SPOTIPY_CLIENT_ID and SPOTIPY_CLIENT_SECRET in your .env file.")
+    
     client_credentials_manager = SpotifyClientCredentials(
-        client_id=settings.SPOTIPY_CLIENT_ID,
-        client_secret=settings.SPOTIPY_CLIENT_SECRET
+        client_id=client_id,
+        client_secret=client_secret
     )
     return spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 

@@ -13,7 +13,7 @@ from allauth.account.forms import default_token_generator
 from django.core.mail import send_mail
 from django.conf import settings
 
-from otp.models import OTPValidation
+# OTP removed - users are activated immediately upon registration
 from users.models import Friendship
 
 User = get_user_model()
@@ -78,23 +78,16 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.profession = self.cleaned_data["profession"]
         user.country = self.cleaned_data["country"]
         user.city = self.cleaned_data["city"]
-        user.is_active = False
+        user.is_active = True  # Activate user immediately - no OTP required
         user.set_password(self.cleaned_data["password1"])
         user.save()
         setup_user_email(request, user, [])
         adapter.save_user(request, user, self)
 
-        otp = OTPValidation.generate_otp()
-
-        OTPValidation.objects.create(user=user, otp=otp)
-
-        send_mail(
-            "Your OTP Code",
-            f"Your OTP is: {otp}",
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
+        # Log successful registration
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"User registered and activated: {user.email}")
 
         return user
 
@@ -150,9 +143,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    pk = serializers.IntegerField(source='id', read_only=True)
+    
     class Meta:
         model = User
         fields = [
+            'pk',
+            'uid',
             'email',
             'name',
             'profession',
@@ -165,6 +163,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
+    
+    def get_profile_image(self, obj):
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_image.url)
+        return None
 
 class NotificationPreferenceSerializer(serializers.ModelSerializer):
     class Meta:

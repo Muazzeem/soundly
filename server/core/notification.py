@@ -26,6 +26,18 @@ def send_notification(
                     defaults={"email": "system@soundlybeats.com", "is_active": False}
                 )
 
+        # Prepare extra_data with both song_url and activity_id if target is an Activity
+        extra_data = {}
+        if target_url:
+            extra_data["song_url"] = target_url
+        
+        # If target is an Activity, include its UID for navigation
+        if target and hasattr(target, 'uid'):
+            extra_data["activity_id"] = str(target.uid)
+            # If target_url wasn't provided, create a feed URL
+            if not target_url:
+                extra_data["song_url"] = f"/feed?activity={str(target.uid)}"
+        
         notify.send(
             sender=sender,
             recipient=recipient,
@@ -34,7 +46,7 @@ def send_notification(
             target=target,
             description=description,
             public=False,
-            extra_data={"song_url": target_url}
+            extra_data=extra_data
         )
 
         device_token = User.objects.get(email=recipient.email).device_token

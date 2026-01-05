@@ -213,3 +213,6 @@ client_secret_360088028570-suabtj6mk43m9vdp1n5cdn443i1rr9i0.apps.googleuserconte
 **/firebase-adminsdk-*.json
 **/*firebase*admin*.json
 server/core/soundlybeats-firebase-adminsdk-*.json
+
+# Cursor workspace assets (not needed in repository)
+assets/

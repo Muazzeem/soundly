@@ -88,8 +88,10 @@ class SongExchangeSerializer(serializers.ModelSerializer):
 
 class MatchedSongExchangeSerializer(serializers.ModelSerializer):
     received_song = SongSerializer()
+    sent_song = SongSerializer()
     sender = UserSerializer()
+    receiver = UserSerializer()
 
     class Meta:
         model = SongExchange
-        fields = ['id', 'sent_song', 'received_song', 'matched_at', 'sender']
+        fields = ['id', 'sent_song', 'received_song', 'matched_at', 'sender', 'receiver']

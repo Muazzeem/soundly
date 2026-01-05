@@ -28,7 +28,6 @@ class VerifyOTPView(APIView):
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
-            send_notification(None, user, "account_verified", description="Your account was verified successfully")
 
             return Response(
                 {
@@ -67,13 +66,21 @@ class ResendOTPView(APIView):
 
             # Send OTP via email if available
             if user.email:
-                send_mail(
-                    "Your New Registration OTP",
-                    f"Your new OTP for account verification is: {otp_obj.otp}",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [user.email],
-                    fail_silently=False,
-                )
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"Resending OTP to {user.email}: {otp_obj.otp}")
+                
+                try:
+                    send_mail(
+                        "Your New Registration OTP",
+                        f"Your new OTP for account verification is: {otp_obj.otp}",
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    logger.info(f"OTP email sent to {user.email}")
+                except Exception as e:
+                    logger.error(f"Failed to send OTP email to {user.email}: {str(e)}", exc_info=True)
 
             # If you have SMS functionality, add it here
             # For example:
