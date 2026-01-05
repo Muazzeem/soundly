@@ -82,6 +82,11 @@ class SongExchange(UUIDBaseModel, TimeStampModel):
         ('matched', 'Matched'),
         ('completed', 'Completed'),
     ]
+    
+    MATCH_TYPES = [
+        ('random', 'Random Match'),
+        ('genre', 'Genre Match'),
+    ]
 
     sender = models.ForeignKey(User, related_name='sent_songs', on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name='received_songs', on_delete=models.CASCADE, null=True, blank=True)
@@ -89,6 +94,7 @@ class SongExchange(UUIDBaseModel, TimeStampModel):
     received_song = models.ForeignKey(Song, related_name='received_exchanges', on_delete=models.CASCADE, null=True, blank=True)
 
     status = models.CharField(max_length=20, choices=EXCHANGE_STATUS, default='pending')
+    match_type = models.CharField(max_length=20, choices=MATCH_TYPES, null=True, blank=True)
     matched_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 

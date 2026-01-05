@@ -15,6 +15,7 @@ class NotificationHQSerializer(serializers.ModelSerializer):
     target_content_type = ContentTypeSerializer(read_only=True)
     created_ago = serializers.SerializerMethodField()
     song_url = serializers.SerializerMethodField()
+    activity_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
@@ -40,5 +41,11 @@ class NotificationHQSerializer(serializers.ModelSerializer):
     def get_song_url(self, obj):
         if obj.data:
             return obj.data.get('extra_data', {}).get('song_url')
+        else:
+            return None
+
+    def get_activity_id(self, obj):
+        if obj.data:
+            return obj.data.get('extra_data', {}).get('activity_id')
         else:
             return None

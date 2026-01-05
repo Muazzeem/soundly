@@ -79,4 +79,37 @@ def readiness_check(request):
         }, status=503)
 
 
+@require_http_methods(["GET", "OPTIONS"])
+def cors_test(request):
+    """
+    Test endpoint to verify CORS is working.
+    """
+    from django.conf import settings
+    
+    data = {
+        "message": "CORS test successful",
+        "origin": request.META.get("HTTP_ORIGIN", "not provided"),
+        "cors_settings": {
+            "CORS_ALLOW_ALL_ORIGINS": getattr(settings, "CORS_ALLOW_ALL_ORIGINS", "NOT SET"),
+            "CORS_ALLOWED_ORIGINS": getattr(settings, "CORS_ALLOWED_ORIGINS", "NOT SET"),
+            "CORS_ALLOW_CREDENTIALS": getattr(settings, "CORS_ALLOW_CREDENTIALS", "NOT SET"),
+            "cors_middleware_in_list": "corsheaders.middleware.CorsMiddleware" in settings.MIDDLEWARE,
+            "custom_cors_middleware_in_list": "soundly.middleware.CustomCorsMiddleware" in settings.MIDDLEWARE,
+            "cors_in_apps": "corsheaders" in settings.INSTALLED_APPS,
+        }
+    }
+    
+    response = JsonResponse(data)
+    # CORS headers will be added by CustomCorsMiddleware
+    # Log response headers for debugging
+    if settings.DEBUG:
+        cors_headers = {
+            k: v for k, v in response.items() 
+            if k.startswith("Access-Control-")
+        }
+        logger.debug(f"CORS test endpoint - Response headers: {list(cors_headers.keys())}")
+    
+    return response
+
+
 

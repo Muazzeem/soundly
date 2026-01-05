@@ -78,6 +78,7 @@ def find_and_create_automatic_match(current_user, new_song):
     original_exchange.receiver = current_user
     original_exchange.received_song = new_song
     original_exchange.status = 'matched'
+    original_exchange.match_type = 'genre'
     original_exchange.matched_at = timezone.now()
     original_exchange.save()
 
@@ -87,6 +88,7 @@ def find_and_create_automatic_match(current_user, new_song):
         sent_song=new_song,
         received_song=matched_song,
         status='matched',
+        match_type='genre',
         matched_at=timezone.now()
     )
 
@@ -96,15 +98,38 @@ def find_and_create_automatic_match(current_user, new_song):
 def find_and_create_random_match(current_user, new_song):
     """
     Find a random song match and create exchanges.
+    Excludes songs that have already been exchanged with this user.
     Returns: (matched_song, matched_user) or (None, None) if no songs available
     """
+    # Get all songs uploaded by other users
     available_songs = Song.objects.exclude(
         uploader=current_user
     ).select_related('platform', 'uploader')
+    
+    # Exclude songs that have already been exchanged with this user
+    # (either as sender or receiver in a matched exchange)
+    already_exchanged_exchanges = SongExchange.objects.filter(
+        Q(sender=current_user) | Q(receiver=current_user),
+        status__in=['matched', 'completed']
+    )
+    
+    # Collect all song IDs that have been exchanged with this user
+    excluded_song_ids = set()
+    excluded_song_ids.add(new_song.id)  # Exclude the current song being sent
+    
+    for exchange in already_exchanged_exchanges:
+        if exchange.sent_song_id:
+            excluded_song_ids.add(exchange.sent_song_id)
+        if exchange.received_song_id:
+            excluded_song_ids.add(exchange.received_song_id)
+    
+    # Filter out already exchanged songs
+    available_songs = available_songs.exclude(id__in=excluded_song_ids)
 
     songs_list = list(available_songs)
 
     if not songs_list:
+        # No new songs available - create pending exchange
         SongExchange.objects.create(
             sender=current_user,
             sent_song=new_song,
@@ -112,6 +137,7 @@ def find_and_create_random_match(current_user, new_song):
         )
         return None, None
 
+    # Randomly select from available songs
     matched_song = random.choice(songs_list)
     matched_user = matched_song.uploader
 
@@ -122,6 +148,7 @@ def find_and_create_random_match(current_user, new_song):
         sent_song=new_song,
         received_song=matched_song,
         status='matched',
+        match_type='random',
         matched_at=timezone.now()
     )
 
@@ -132,6 +159,7 @@ def find_and_create_random_match(current_user, new_song):
         sent_song=matched_song,
         received_song=new_song,
         status='matched',
+        match_type='random',
         matched_at=timezone.now()
     )
 
