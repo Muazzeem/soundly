@@ -4,19 +4,29 @@ from .base import *
 
 DEBUG = True
 SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default=""))
-ALLOWED_HOSTS = ["api.soundlybeats.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [
+    "api.soundlybeats.com",
+    "www.soundlybeats.com",
+    "soundlybeats.com",
+    "localhost",
+    "127.0.0.1",
+]
 
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS",
-    default="https://api.soundlybeats.com,https://soundly-beats.vercel.app"
-).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.soundlybeats.com",
+    "https://www.soundlybeats.com",
+    "https://soundlybeats.com",
+    "https://soundly-beats.vercel.app",
+]
 
 # CORS Configuration - restrict to specific origins in production
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS",
-    default="https://www.soundlybeats.com,https://soundly-beats.vercel.app",
-).split(",")
+CORS_ALLOWED_ORIGINS = [
+    "https://api.soundlybeats.com",
+    "https://www.soundlybeats.com",
+    "https://soundlybeats.com",
+    "https://soundly-beats.vercel.app",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # JWT Security Settings for Production
@@ -24,7 +34,7 @@ REST_AUTH["JWT_AUTH_SECURE"] = True  # HTTPS only
 REST_AUTH["JWT_AUTH_HTTPONLY"] = True  # Not accessible via JavaScript
 
 # Security Headers
-SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=False, cast=bool)
 SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -101,7 +111,5 @@ try:
 except ImportError:
     pass
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "..", "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
