@@ -2,7 +2,7 @@ import os
 
 from .base import *
 
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+DEBUG = True
 SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default=""))
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "api.soundlybeats.com").split(",")
 
