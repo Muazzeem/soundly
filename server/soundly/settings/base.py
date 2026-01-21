@@ -9,7 +9,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default="unsafe-d
 
 # ALLOWED_HOSTS should be set in environment-specific settings
 # Default to empty list - must be explicitly set in dev/prod
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "home",

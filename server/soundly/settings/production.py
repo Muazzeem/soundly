@@ -4,13 +4,7 @@ from .base import *
 
 DEBUG = True
 SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default=""))
-ALLOWED_HOSTS = [
-    "api.soundlybeats.com",
-    "www.soundlybeats.com",
-    "soundlybeats.com",
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://api.soundlybeats.com",
@@ -105,11 +99,6 @@ LOGGING = {
         },
     },
 }
-
-try:
-    from .local import *
-except ImportError:
-    pass
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
