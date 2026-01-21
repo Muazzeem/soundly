@@ -12,16 +12,11 @@ services:
             - soundly-db:/var/lib/postgresql/data
     server:
         container_name: soundly_server
-        image: ghcr.io/mubarak117136/soundly:prod
+        image: ghcr.io/muazzeem/soundly:prod
         environment:
             - DJANGO_SETTINGS_MODULE=soundly.settings.production
         # Use startup script to ensure directories exist, then start gunicorn
-        command: >
-            sh -c "
-            mkdir -p /app/server/logs /app/server/static /app/server/media /app/server/socket &&
-            chmod -R 755 /app/server/logs /app/server/static /app/server/media /app/server/socket &&
-            gunicorn -w 6 -b unix:/app/server/socket/SERVER.sock soundly.wsgi:application
-            "
+        command: gunicorn -w 4 -b unix:/app/server/socket/SOUNDLY.sock soundly.wsgi:application
         volumes:
             - ./server/.env:/app/server/.env
             - ./server/static:/app/server/static
