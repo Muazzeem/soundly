@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /app/server/
 
-COPY . /app/
-COPY /requirements /app/requirements
+COPY ./server /app/server/
+RUN pip install --upgrade pip
 
 RUN pip install --upgrade pip
 
