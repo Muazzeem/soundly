@@ -14,8 +14,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY . /app/
-COPY /requirements /app/requirements
-
+COPY . /app/server
 RUN pip install --upgrade pip
 
 ARG ENV=dev
