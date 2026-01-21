@@ -5,7 +5,7 @@ from datetime import timedelta
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default="unsafe-dev-key-change-in-production"))
 
 # ALLOWED_HOSTS should be set in environment-specific settings
 # Default to empty list - must be explicitly set in dev/prod

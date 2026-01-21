@@ -2,9 +2,9 @@ import os
 
 from .base import *
 
-DEBUG = config("DEBUG", default=False, cast=bool)
-SECRET_KEY = config("SECRET_KEY")
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="api.soundlybeats.com").split(",")
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default=""))
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "api.soundlybeats.com").split(",")
 
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",

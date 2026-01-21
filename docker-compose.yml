@@ -11,12 +11,11 @@ services:
     container_name: soundly_server
     image: ghcr.io/muazzeem/soundly:prod
     env_file:
-      - ./server/.env
+      - .env
     environment:
-      - DJANGO_SETTINGS_MODULE=soundly.settings.dev
+      - DJANGO_SETTINGS_MODULE=soundly.settings.production
+      - ALLOWED_HOSTS=api.soundlybeats.com,localhost,127.0.0.1
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./server:/app
     ports:
       - "8000:8000"
     depends_on:
