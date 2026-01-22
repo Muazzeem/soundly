@@ -124,7 +124,6 @@ def google_auth(request):
             defaults={
                 'first_name': id_info.get('given_name', ''),
                 'last_name': id_info.get('family_name', ''),
-                'username': email,  # Set username to email for compatibility
             }
         )
         

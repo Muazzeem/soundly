@@ -8,8 +8,7 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 SECRET_KEY = config("SECRET_KEY")
 
 # ALLOWED_HOSTS should be set in environment-specific settings
-# Default to empty list - must be explicitly set in dev/prod
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     "home",
