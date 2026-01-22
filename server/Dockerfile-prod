@@ -11,10 +11,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app/server/
+WORKDIR /app
 
-COPY ./server /app/server/
+COPY . /app/
+COPY /requirements /app/requirements
+
 RUN pip install --upgrade pip
 
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install -r requirements/prod.txt
+ARG ENV=dev
+RUN pip install -r requirements/${ENV}.txt

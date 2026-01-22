@@ -5,11 +5,11 @@ from datetime import timedelta
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
-SECRET_KEY = os.environ.get("SECRET_KEY", config("SECRET_KEY", default="unsafe-dev-key-change-in-production"))
+SECRET_KEY = config("SECRET_KEY")
 
 # ALLOWED_HOSTS should be set in environment-specific settings
 # Default to empty list - must be explicitly set in dev/prod
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "home",
@@ -86,12 +86,12 @@ TEMPLATES = [
     },
 ]
 
-STRIPE_API_KEY = ""
+STRIPE_API_KEY = config("STRIPE_API_KEY")
 
 MONTHLY_PRICE_ID = "price_1Rqw6kAMYVKKEks2PHPaqjhl"
 YEARLY_PRICE_ID = "price_1Rqw69AMYVKKEks2BtxXCxL8"
 
-SONG_UPLOAD_LIMIT = config("SONG_UPLOAD_LIMIT", 30)
+SONG_UPLOAD_LIMIT = config("SONG_UPLOAD_LIMIT")
 
 WSGI_APPLICATION = "soundly.wsgi.application"
 
